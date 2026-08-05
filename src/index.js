@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 
 const processRoutes = require("./routes/process");
+const previewRoutes = require("./routes/preview");
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api", processRoutes);
+app.use("/api", previewRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
