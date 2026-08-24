@@ -19,6 +19,11 @@ app.use(
   })
 );
 
+// Needed for JSON bodies (used by /api/link and /api/link/preview).
+// The multipart /api/process route uses multer separately and doesn't
+// need this, but it's harmless to have both.
+app.use(express.json());
+
 app.get("/", (_req, res) => {
   res.json({ ok: true, service: "recap-backend" });
 });
