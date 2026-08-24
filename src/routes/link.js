@@ -28,11 +28,14 @@ router.post("/link/preview", async (req, res) => {
   }
 });
 
-// POST /api/link  { url, voice, tone }
+// POST /api/link  { url, voice, tone, info }
 // Same shape as POST /api/process, but the source video comes from a
-// TikTok/RedNote link instead of a direct upload.
+// TikTok/RedNote link instead of a direct upload. `info` is optional —
+// pass along the object returned by /link/preview to skip a redundant
+// probe call (and its own chance of hitting the intermittent extractor
+// error TikTok/RedNote occasionally throw).
 router.post("/link", async (req, res) => {
-  const { url, voice, tone } = req.body;
+  const { url, voice, tone, info } = req.body;
   if (!url) return res.status(400).json({ error: "url ပါဝင်ရမယ်" });
 
   const jobId = crypto.randomUUID();
@@ -40,7 +43,7 @@ router.post("/link", async (req, res) => {
 
   res.status(202).json({ jobId: job.id, status: job.status });
 
-  runLinkPipeline(jobId, url, voice || "hsayama", tone || "suspense").catch((err) => {
+  runLinkPipeline(jobId, url, voice || "hsayama", tone || "suspense", info || null).catch((err) => {
     updateJob(jobId, { status: "error", error: err.message });
   });
 });
@@ -64,7 +67,7 @@ router.get("/link/:id/result", (req, res) => {
   res.download(job.resultPath, "recap.mp4");
 });
 
-async function runLinkPipeline(jobId, url, voiceId, toneId) {
+async function runLinkPipeline(jobId, url, voiceId, toneId, knownInfo) {
   const workDir = path.join(os.tmpdir(), `recap-link-${jobId}`);
   fs.mkdirSync(workDir, { recursive: true });
 
@@ -75,7 +78,7 @@ async function runLinkPipeline(jobId, url, voiceId, toneId) {
 
   try {
     updateJob(jobId, { status: "downloading", progress: 5 });
-    await downloadVideo(url, videoPath);
+    await downloadVideo(url, videoPath, knownInfo);
 
     updateJob(jobId, { status: "transcribing", progress: 20 });
     await extractAudio(videoPath, audioPath);
