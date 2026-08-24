@@ -12,10 +12,13 @@ const OPENAI_FALLBACK_VOICE = {
   bogyi: "onyx", // deep suspense
 };
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 /**
  * Calls TTS Pro to turn a script into narration audio and saves it to disk.
- * Falls back to OpenAI's TTS API if TTS Pro fails (e.g. Gemini quota
- * exceeded — see narrate() below for the fallback path).
+ * Retries a couple of times first — Render free-tier services can return a
+ * transient 502 right after a cold start / redeploy, which isn't a real
+ * failure of the TTS call itself.
  * @param {string} script - Burmese narration text
  * @param {string} voiceId - key from VOICES
  * @param {string} outPath - where to write the audio file
@@ -23,28 +26,39 @@ const OPENAI_FALLBACK_VOICE = {
  */
 async function narrateWithTtsPro(script, voiceId, outPath) {
   const voice = VOICES[voiceId] || VOICES.hsayama;
+  const MAX_ATTEMPTS = 3;
+  let lastErr;
 
-  const res = await fetch(process.env.TTS_PRO_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      text: script,
-      voice: voice.ttsVoice,
-    }),
-  });
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(process.env.TTS_PRO_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: script,
+          voice: voice.ttsVoice,
+        }),
+      });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`TTS Pro request failed (${res.status}): ${text}`);
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`TTS Pro request failed (${res.status}): ${text.slice(0, 300)}`);
+      }
+
+      // TTS Pro returns { audioBase64, mimeType, sampleRate, chunkCount }
+      const data = await res.json();
+      const base64 = data.audioBase64;
+      if (!base64) throw new Error("TTS Pro response missing audioBase64");
+
+      fs.writeFileSync(outPath, Buffer.from(base64, "base64"));
+      return outPath;
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[narrate] TTS Pro attempt ${attempt}/${MAX_ATTEMPTS} failed: ${err.message.slice(0, 200)}`);
+      if (attempt < MAX_ATTEMPTS) await sleep(3000 * attempt);
+    }
   }
-
-  // TTS Pro returns { audioBase64, mimeType, sampleRate, chunkCount }
-  const data = await res.json();
-  const base64 = data.audioBase64;
-  if (!base64) throw new Error("TTS Pro response missing audioBase64");
-
-  fs.writeFileSync(outPath, Buffer.from(base64, "base64"));
-  return outPath;
+  throw lastErr;
 }
 
 /**
