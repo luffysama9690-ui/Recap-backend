@@ -1,7 +1,7 @@
 const fs = require("fs");
 const fetch = require("node-fetch");
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash"; // much higher free-tier daily quota than gemini-3.6-flash
 
 /**
  * Sends an audio file to Gemini and returns a verbatim transcript.
