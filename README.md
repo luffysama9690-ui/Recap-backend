@@ -37,6 +37,13 @@ RedNote's extractor breaks more often than TikTok's since RedNote
 actively pushes back on scraping — keep `yt-dlp-exec` updated
 (`npm update yt-dlp-exec`) if RedNote links start failing.
 
+YouTube reliably blocks unauthenticated server requests with "Sign in to
+confirm you're not a bot" — this isn't intermittent like TikTok/RedNote,
+so retries won't fix it. To support YouTube links, set `YOUTUBE_COOKIES_B64`
+(see `.env.example`) to a base64-encoded `cookies.txt` exported from a
+logged-in browser session. Cookies expire periodically and will need
+re-exporting when YouTube starts rejecting them again.
+
 ## Environment variables
 
 Copy `.env.example` to `.env` and fill in:
