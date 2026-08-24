@@ -1,6 +1,6 @@
 const ytdlp = require("yt-dlp-exec");
 
-const MAX_DURATION_SECONDS = parseInt(process.env.MAX_VIDEO_DURATION || "240", 10); // matches the 4-min MVP limit
+const MAX_DURATION_SECONDS = parseInt(process.env.MAX_VIDEO_DURATION || "7200", 10); // 2 hours default
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 2000;
 
