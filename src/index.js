@@ -4,6 +4,7 @@ const cors = require("cors");
 
 const processRoutes = require("./routes/process");
 const previewRoutes = require("./routes/preview");
+const linkRoutes = require("./routes/link");
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.get("/", (_req, res) => {
 
 app.use("/api", processRoutes);
 app.use("/api", previewRoutes);
+app.use("/api", linkRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

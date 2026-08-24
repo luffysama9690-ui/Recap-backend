@@ -19,6 +19,29 @@ voiceover audio via TTS Pro, and merges it back onto the video.
 4. `GET /api/process/:id/result` — download the finished `recap.mp4`
    once status is `done`
 
+## Link import (TikTok / RedNote)
+
+- `POST /api/link/preview` — `{ url }`, returns title/duration/thumbnail
+  only. No credit charged, no download yet — use this to show a preview
+  card before the user confirms.
+- `POST /api/link` — `{ url, voice, tone }`, same response/polling shape
+  as `POST /api/process` (`jobId` → poll `GET /api/link/:id` → download
+  from `GET /api/link/:id/result`). Adds one `downloading` step before
+  the existing transcribe → script → narrate → render pipeline.
+
+Requires the `yt-dlp` binary on the server (not an npm package — Render's
+Node runtime won't have it by default). Two options:
+
+1. Add a build step that installs it via pip, e.g. build command
+   `pip install -U yt-dlp && npm install` (needs a Python-capable Render
+   environment/Docker image).
+2. Or switch `src/services/ytdlp.js` to the `yt-dlp-exec` npm package,
+   which bundles the binary via its own postinstall — simplest if the
+   Render service is Node-only.
+
+RedNote's extractor breaks more often than TikTok's since RedNote
+actively pushes back on scraping — keep `yt-dlp` updated.
+
 ## Environment variables
 
 Copy `.env.example` to `.env` and fill in:
