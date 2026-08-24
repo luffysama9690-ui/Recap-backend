@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 const { VOICES, TONES } = require("../voices");
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
 function buildPrompts(transcript, voiceId, toneId) {
   const voice = VOICES[voiceId] || VOICES.hsayama;
