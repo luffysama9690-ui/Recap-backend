@@ -29,18 +29,13 @@ voiceover audio via TTS Pro, and merges it back onto the video.
   from `GET /api/link/:id/result`). Adds one `downloading` step before
   the existing transcribe → script → narrate → render pipeline.
 
-Requires the `yt-dlp` binary on the server (not an npm package — Render's
-Node runtime won't have it by default). Two options:
-
-1. Add a build step that installs it via pip, e.g. build command
-   `pip install -U yt-dlp && npm install` (needs a Python-capable Render
-   environment/Docker image).
-2. Or switch `src/services/ytdlp.js` to the `yt-dlp-exec` npm package,
-   which bundles the binary via its own postinstall — simplest if the
-   Render service is Node-only.
+Uses the `yt-dlp-exec` npm package, which downloads the `yt-dlp` binary
+itself via its own postinstall step — no separate Python/pip install
+needed on Render, `npm install` is enough.
 
 RedNote's extractor breaks more often than TikTok's since RedNote
-actively pushes back on scraping — keep `yt-dlp` updated.
+actively pushes back on scraping — keep `yt-dlp-exec` updated
+(`npm update yt-dlp-exec`) if RedNote links start failing.
 
 ## Environment variables
 
