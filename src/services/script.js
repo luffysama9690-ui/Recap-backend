@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 const { VOICES, TONES } = require("../voices");
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash"; // much higher free-tier daily quota than gemini-3.6-flash
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash"; // gemini-2.5-flash is no longer available to new-user API keys; stuck with
 
 function buildPrompts(transcript, voiceId, toneId) {
   const voice = VOICES[voiceId] || VOICES.hsayama;
