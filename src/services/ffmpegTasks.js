@@ -3,6 +3,20 @@ const ffmpeg = require("fluent-ffmpeg");
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 /**
+ * Returns the duration (seconds) of a local media file via ffprobe.
+ */
+function getMediaDuration(filePath) {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err) return reject(new Error(`ffprobe failed: ${err.message}`));
+      const duration = metadata?.format?.duration;
+      if (!duration) return reject(new Error("ffprobe returned no duration"));
+      resolve(duration);
+    });
+  });
+}
+
+/**
  * Pulls the audio track out of a video file so it can be sent to Whisper.
  */
 function extractAudio(videoPath, audioOutPath) {
@@ -41,4 +55,4 @@ function mergeVideoWithNarration(videoPath, narrationPath, outPath) {
   });
 }
 
-module.exports = { extractAudio, mergeVideoWithNarration };
+module.exports = { getMediaDuration, extractAudio, mergeVideoWithNarration };

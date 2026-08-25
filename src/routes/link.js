@@ -78,14 +78,14 @@ async function runLinkPipeline(jobId, url, voiceId, toneId, knownInfo) {
 
   try {
     updateJob(jobId, { status: "downloading", progress: 5 });
-    await downloadVideo(url, videoPath, knownInfo);
+    const info = await downloadVideo(url, videoPath, knownInfo);
 
     updateJob(jobId, { status: "transcribing", progress: 20 });
     await extractAudio(videoPath, audioPath);
     const transcript = await transcribeAudio(audioPath);
 
     updateJob(jobId, { status: "writing_script", progress: 45 });
-    const script = await writeScript(transcript, voiceId, toneId);
+    const script = await writeScript(transcript, voiceId, toneId, info.duration);
 
     updateJob(jobId, { status: "narrating", progress: 65 });
     await narrateScript(script, voiceId, narrationPath);

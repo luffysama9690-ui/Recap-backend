@@ -6,7 +6,7 @@ const express = require("express");
 const multer = require("multer");
 
 const { createJob, updateJob, getJob } = require("../jobStore");
-const { extractAudio, mergeVideoWithNarration } = require("../services/ffmpegTasks");
+const { getMediaDuration, extractAudio, mergeVideoWithNarration } = require("../services/ffmpegTasks");
 const { transcribeAudio } = require("../services/transcribe");
 const { writeScript } = require("../services/script");
 const { narrateScript } = require("../services/narrate");
@@ -66,11 +66,12 @@ async function runPipeline(jobId, videoPath, voiceId, toneId) {
 
   try {
     updateJob(jobId, { status: "transcribing", progress: 10 });
+    const durationSeconds = await getMediaDuration(videoPath).catch(() => 0);
     await extractAudio(videoPath, audioPath);
     const transcript = await transcribeAudio(audioPath);
 
     updateJob(jobId, { status: "writing_script", progress: 35 });
-    const script = await writeScript(transcript, voiceId, toneId);
+    const script = await writeScript(transcript, voiceId, toneId, durationSeconds);
 
     updateJob(jobId, { status: "narrating", progress: 60 });
     await narrateScript(script, voiceId, narrationPath);
