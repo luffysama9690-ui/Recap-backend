@@ -17,13 +17,19 @@ function getMediaDuration(filePath) {
 }
 
 /**
- * Pulls the audio track out of a video file so it can be sent to Whisper.
+ * Pulls the audio track out of a video file so it can be sent to Gemini for
+ * transcription. Mono + 64kbps is plenty for speech recognition and keeps
+ * the file (and the base64-encoded request sent to Gemini) meaningfully
+ * smaller than the default ~128kbps stereo — important for longer videos,
+ * since Gemini's inline audio data has a request-size limit.
  */
 function extractAudio(videoPath, audioOutPath) {
   return new Promise((resolve, reject) => {
     ffmpeg(videoPath)
       .noVideo()
       .audioCodec("libmp3lame")
+      .audioChannels(1)
+      .audioBitrate("64k")
       .format("mp3")
       .on("end", () => resolve(audioOutPath))
       .on("error", (err) => reject(new Error(`Audio extraction failed: ${err.message}`)))
