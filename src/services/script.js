@@ -3,6 +3,27 @@ const { VOICES, TONES } = require("../voices");
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash"; // gemini-2.5-flash is no longer available to new-user API keys; stuck with
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const MAX_ATTEMPTS = 3;
+
+// 503 ("model overloaded") and similar 5xx/429 are transient — retry a
+// couple of times before giving up or falling back to OpenAI.
+async function withRetry(fn, label) {
+  let lastErr;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      const retryable = /\b(429|500|502|503|504)\b/.test(err.message);
+      console.warn(`[script] ${label} attempt ${attempt}/${MAX_ATTEMPTS} failed: ${err.message.slice(0, 200)}`);
+      if (!retryable || attempt >= MAX_ATTEMPTS) break;
+      await sleep(3000 * attempt);
+    }
+  }
+  throw lastErr;
+}
+
 // Narration length now scales with the source video's duration instead of
 // a fixed 150-300 words, so the final merged video (which is trimmed to
 // match the narration via -shortest in ffmpegTasks.js) ends up close to
@@ -52,28 +73,30 @@ ${transcript}
 async function writeScriptWithGemini(transcript, voiceId, toneId, durationSeconds) {
   const { systemPrompt, userPrompt } = buildPrompts(transcript, voiceId, toneId, durationSeconds);
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ parts: [{ text: userPrompt }] }],
-        generationConfig: { temperature: 0.8 },
-      }),
+  return withRetry(async () => {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ parts: [{ text: userPrompt }] }],
+          generationConfig: { temperature: 0.8 },
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`Gemini script generation failed (${res.status}): ${text}`);
     }
-  );
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Gemini script generation failed (${res.status}): ${text}`);
-  }
-
-  const data = await res.json();
-  const script = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-  if (!script) throw new Error("Gemini script generation returned empty content");
-  return script;
+    const data = await res.json();
+    const script = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!script) throw new Error("Gemini script generation returned empty content");
+    return script;
+  }, "Gemini script");
 }
 
 /**
