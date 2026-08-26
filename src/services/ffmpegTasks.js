@@ -102,17 +102,32 @@ async function applyOverlays(inputPath, outputPath, { blur, logoPath, logo } = {
   // Even dimensions/offsets — some codecs/filters (crop, libx264 yuv420p)
   // require even width/height/x/y.
   const even = (n) => n - (n % 2);
+  // Guards against out-of-bounds crop/overlay coordinates — e.g. if the
+  // frontend's percentages were computed against a letterboxed <video>
+  // element whose rendered box included black bars (portrait video in a
+  // wider container), a box could otherwise end up positioned or sized
+  // past the actual frame edge, which makes ffmpeg's crop filter fail
+  // immediately with no output frames.
+  const clampBox = (xPct, yPct, wPct, hPct, dimW, dimH) => {
+    let w = even(px(Math.min(wPct, 95), dimW));
+    let h = even(px(Math.min(hPct, 95), dimH));
+    let x = even(px(xPct, dimW));
+    let y = even(px(yPct, dimH));
+    x = Math.min(x, dimW - w - 2);
+    y = Math.min(y, dimH - h - 2);
+    x = Math.max(0, x);
+    y = Math.max(0, y);
+    return { x, y, w, h };
+  };
 
   return new Promise((resolve, reject) => {
     const cmd = ffmpeg(inputPath);
     const filters = [];
     let videoLabel = "0:v";
+    let stderrTail = "";
 
     if (blur) {
-      const bx = even(px(blur.xPct, width));
-      const by = even(px(blur.yPct, height));
-      const bw = even(px(blur.wPct, width));
-      const bh = even(px(blur.hPct, height));
+      const { x: bx, y: by, w: bw, h: bh } = clampBox(blur.xPct, blur.yPct, blur.wPct, blur.hPct, width, height);
       filters.push(`[0:v]crop=${bw}:${bh}:${bx}:${by},boxblur=20:5[blurpatch]`);
       filters.push(`[0:v][blurpatch]overlay=${bx}:${by}[vblur]`);
       videoLabel = "vblur";
@@ -120,9 +135,9 @@ async function applyOverlays(inputPath, outputPath, { blur, logoPath, logo } = {
 
     if (logoPath) {
       cmd.input(logoPath);
-      const lx = even(px(logo?.xPct ?? 3, width));
-      const ly = even(px(logo?.yPct ?? 3, height));
-      const lw = even(px(logo?.wPct ?? 15, width));
+      const lw = even(px(Math.min(logo?.wPct ?? 15, 90), width));
+      const lx = Math.max(0, Math.min(even(px(logo?.xPct ?? 3, width)), width - lw - 2));
+      const ly = Math.max(0, even(px(logo?.yPct ?? 3, height)));
       filters.push(`[1:v]scale=${lw}:-2[logoScaled]`);
       filters.push(`[${videoLabel}][logoScaled]overlay=${lx}:${ly}[outv]`);
       videoLabel = "outv";
@@ -133,8 +148,11 @@ async function applyOverlays(inputPath, outputPath, { blur, logoPath, logo } = {
     cmd
       .complexFilter(filters, "outv")
       .outputOptions(["-map 0:a?", "-c:a copy"])
+      .on("stderr", (line) => {
+        stderrTail = (stderrTail + "\n" + line).slice(-800); // keep last ~800 chars
+      })
       .on("end", () => resolve(outputPath))
-      .on("error", (err) => reject(new Error(`Overlay render failed: ${err.message}`)))
+      .on("error", (err) => reject(new Error(`Overlay render failed: ${err.message}. Details: ${stderrTail}`)))
       .save(outputPath);
   });
 }
