@@ -28,7 +28,7 @@ async function withRetry(fn, label) {
 // a fixed 150-300 words, so the final merged video (which is trimmed to
 // match the narration via -shortest in ffmpegTasks.js) ends up close to
 // the original video's length instead of always ~1-2 minutes.
-const WORDS_PER_MINUTE = 150; // rough English narration speaking pace
+const WORDS_PER_MINUTE = 160; // rough Burmese narration speaking pace
 const MIN_TARGET_WORDS = 150;
 // Cap narration length even for very long source videos — otherwise a
 // 2-hour video would generate a ~24,000-word script, blowing up TTS cost
@@ -51,7 +51,7 @@ function buildPrompts(transcript, voiceId, toneId, durationSeconds) {
   const systemPrompt = `You are a recap narration script writer for Coco.EXE Recap Studio.
 ${voice.styleHint}
 The story's overall mood should be ${toneDesc}.
-Write the output in English only, in a style that reads naturally when read aloud as a voiceover.
+Write the output in Burmese (မြန်မာဘာသာ) only, in a style that reads naturally when read aloud as a voiceover.
 Do not include timestamps, scene numbers, or speaker labels — write it as flowing narration paragraphs, like someone telling the story.
 Cover the whole story from beginning to end — don't just narrate the opening; include the middle and the ending too.
 The script should be roughly ${rangeLow}-${rangeHigh} words long.`;

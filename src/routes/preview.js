@@ -45,4 +45,27 @@ router.post("/preview-voice", async (req, res) => {
   }
 });
 
+// Generates and caches preview audio for every voice, one at a time, in
+// the background. Called once at server startup (see index.js) so that by
+// the time a real visitor clicks a preview button, it's usually already
+// cached — instead of everyone's first click per voice paying the full
+// TTS generation delay.
+async function warmPreviewCache() {
+  for (const voiceId of Object.keys(VOICES)) {
+    if (previewCache.has(voiceId)) continue;
+    const tmpPath = path.join(os.tmpdir(), `preview-warm-${voiceId}.wav`);
+    try {
+      await narrateScript(PREVIEW_TEXT, voiceId, tmpPath);
+      const buffer = fs.readFileSync(tmpPath);
+      previewCache.set(voiceId, { audioBase64: buffer.toString("base64"), mimeType: "audio/wav" });
+      console.log(`[preview] Warmed cache for voice "${voiceId}"`);
+    } catch (err) {
+      console.warn(`[preview] Failed to warm cache for voice "${voiceId}": ${err.message.slice(0, 150)}`);
+    } finally {
+      fs.rm(tmpPath, { force: true }, () => {});
+    }
+  }
+}
+
 module.exports = router;
+module.exports.warmPreviewCache = warmPreviewCache;

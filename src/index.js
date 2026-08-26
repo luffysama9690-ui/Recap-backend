@@ -35,4 +35,9 @@ app.use("/api", linkRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Recap backend listening on port ${PORT}`);
+  // Fire-and-forget: pre-generate preview audio for every voice so the
+  // first real visitor doesn't pay the TTS generation delay.
+  previewRoutes.warmPreviewCache().catch((err) =>
+    console.warn(`[preview] warmPreviewCache failed: ${err.message}`)
+  );
 });
