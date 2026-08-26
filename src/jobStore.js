@@ -12,6 +12,7 @@ function createJob(id) {
     progress: 0,
     error: null,
     resultPath: null,
+    editedResultPath: null, // set once /api/jobs/:id/edit (blur/logo) succeeds
     createdAt: Date.now(),
   };
   jobs.set(id, job);
