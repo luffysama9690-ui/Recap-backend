@@ -15,7 +15,7 @@ const router = express.Router();
 
 const upload = multer({
   dest: os.tmpdir(),
-  limits: { fileSize: 500 * 1024 * 1024 }, // 500MB, matches frontend copy
+  limits: { fileSize: 2 * 1024 * 1024 * 1024 }, // 2GB, matches frontend copy
 });
 
 // POST /api/process  (multipart/form-data: video, voice, tone)
