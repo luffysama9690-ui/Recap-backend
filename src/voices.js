@@ -20,6 +20,26 @@ const VOICES = {
     ttsVoice: "Orus",
     styleHint: "နက်ရှိုင်း၊ တင်းမာတဲ့ thriller narrator style နဲ့ ပြောပါ",
   },
+  yamin: {
+    name: "ရာမင်း",
+    ttsVoice: "Kore",
+    styleHint: "ခိုင်မာ၊ ယုံကြည်စိတ်ချရတဲ့ female narrator style နဲ့ ပြောပါ",
+  },
+  koaung: {
+    name: "ကိုအောင်",
+    ttsVoice: "Fenrir",
+    styleHint: "စိတ်လှုပ်ရှားဖွယ်၊ တက်ကြွတဲ့ action commentary style နဲ့ ပြောပါ",
+  },
+  koko: {
+    name: "ကိုကို",
+    ttsVoice: "Charon",
+    styleHint: "ရှင်းလင်း၊ informative သတင်းဆရာဆန်တဲ့ style နဲ့ ပြောပါ",
+  },
+  maley: {
+    name: "မလေး",
+    ttsVoice: "Leda",
+    styleHint: "ငယ်ရွယ်၊ သွက်လက်တက်ကြွတဲ့ female voice style နဲ့ ပြောပါ",
+  },
 };
 
 const TONES = {
