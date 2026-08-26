@@ -21,7 +21,7 @@ const upload = multer({
 // POST /api/process  (multipart/form-data: video, voice, tone)
 router.post("/process", upload.single("video"), async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: "video file ပါဝင်ရမယ်" });
+    return res.status(400).json({ error: "video file is required" });
   }
 
   const voice = req.body.voice || "hsayama";
@@ -41,7 +41,7 @@ router.post("/process", upload.single("video"), async (req, res) => {
 // GET /api/process/:id  -> job status
 router.get("/process/:id", (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) return res.status(404).json({ error: "job မတွေ့ပါ" });
+  if (!job) return res.status(404).json({ error: "job not found" });
   const { id, status, progress, error } = job;
   res.json({ id, status, progress, error, ready: status === "done" });
 });
@@ -49,9 +49,9 @@ router.get("/process/:id", (req, res) => {
 // GET /api/process/:id/result  -> download the finished video
 router.get("/process/:id/result", (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) return res.status(404).json({ error: "job မတွေ့ပါ" });
+  if (!job) return res.status(404).json({ error: "job not found" });
   if (job.status !== "done" || !job.resultPath) {
-    return res.status(409).json({ error: "video မပြီးသေးပါ" });
+    return res.status(409).json({ error: "video is not ready yet" });
   }
   res.download(job.resultPath, "recap.mp4");
 });

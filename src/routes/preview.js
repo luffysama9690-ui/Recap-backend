@@ -9,7 +9,7 @@ const { VOICES } = require("../voices");
 
 const router = express.Router();
 
-const PREVIEW_TEXT = "မင်္ဂလာပါ၊ ဒါက ကျွန်တော့်အသံနမူနာ ဖြစ်ပါတယ်။";
+const PREVIEW_TEXT = "Hello, this is my voice sample.";
 
 // Preview text never changes, so the generated audio for a given voice is
 // always identical — cache it in memory instead of calling Gemini TTS live

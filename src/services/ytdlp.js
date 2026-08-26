@@ -91,7 +91,7 @@ async function downloadVideo(url, videoOutPath, knownInfo = null) {
   const info = knownInfo || (await probeVideo(url));
 
   if (info.duration && info.duration > MAX_DURATION_SECONDS) {
-    throw new Error(`Video ရှည်လွန်းပါတယ် (${info.duration}s). ${MAX_DURATION_SECONDS}s ထက်မကျော်ရပါ။`);
+    throw new Error(`Video is too long (${info.duration}s). Must not exceed ${MAX_DURATION_SECONDS}s.`);
   }
 
   await withRetry(

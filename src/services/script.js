@@ -28,7 +28,7 @@ async function withRetry(fn, label) {
 // a fixed 150-300 words, so the final merged video (which is trimmed to
 // match the narration via -shortest in ffmpegTasks.js) ends up close to
 // the original video's length instead of always ~1-2 minutes.
-const WORDS_PER_MINUTE = 160; // rough Burmese narration speaking pace
+const WORDS_PER_MINUTE = 150; // rough English narration speaking pace
 const MIN_TARGET_WORDS = 150;
 // Cap narration length even for very long source videos — otherwise a
 // 2-hour video would generate a ~24,000-word script, blowing up TTS cost
@@ -48,21 +48,21 @@ function buildPrompts(transcript, voiceId, toneId, durationSeconds) {
   const rangeLow = Math.round(targetWords * 0.9);
   const rangeHigh = Math.round(targetWords * 1.1);
 
-  const systemPrompt = `မင်းက Coco.EXE Recap Studio အတွက် ဇာတ်ကြောင်းပြန်ပြောသူ script writer ဖြစ်တယ်။
+  const systemPrompt = `You are a recap narration script writer for Coco.EXE Recap Studio.
 ${voice.styleHint}
-ဇာတ်လမ်းအနှစ်သာရက ${toneDesc} ဖြစ်ရမယ်။
-Output ကို မြန်မာဘာသာနဲ့ပဲ ရေးပါ၊ voiceover အတွက် ဖတ်ရလွယ်တဲ့ ရေးဟန်ဖြစ်ရမယ်။
-Timestamp၊ scene number၊ speaker label များ မထည့်ပါနဲ့ — ဇာတ်ကြောင်းပြောနေသလို စာပိုဒ်များအဖြစ်ပဲ ရေးပါ။
-Original video ရဲ့ အစအဆုံး ဇာတ်လမ်းတစ်ခုလုံးကို ဖုံးအုပ်ပြီး ဖော်ပြပါ — အစပိုင်းချည်း မဟုတ်ဘဲ အလယ်ပိုင်းနဲ့ အဆုံးပိုင်းအထိ ပါဝင်အောင် ရေးပါ။
-စကားလုံးရေ ${rangeLow}-${rangeHigh} ဝန်းကျင်လောက် ဖြစ်ရမယ်။`;
+The story's overall mood should be ${toneDesc}.
+Write the output in English only, in a style that reads naturally when read aloud as a voiceover.
+Do not include timestamps, scene numbers, or speaker labels — write it as flowing narration paragraphs, like someone telling the story.
+Cover the whole story from beginning to end — don't just narrate the opening; include the middle and the ending too.
+The script should be roughly ${rangeLow}-${rangeHigh} words long.`;
 
-  const userPrompt = `အောက်ပါက ဗီဒီယိုအသံထဲက transcript (မြန်မာ ဒါမှမဟုတ် အင်္ဂလိပ်လို ဖြစ်နိုင်သည်):
+  const userPrompt = `Here is the transcript from the video's audio (it may be in Burmese, English, Chinese, or another language):
 
 """
 ${transcript}
 """
 
-ဒီ transcript ကို Recap narration script အဖြစ် ပြန်ရေးပေးပါ။`;
+Rewrite this transcript as a recap narration script.`;
 
   return { systemPrompt, userPrompt };
 }

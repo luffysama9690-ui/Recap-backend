@@ -1,52 +1,52 @@
 // Keep this in sync with the frontend's VOICES list (src/components/RecapUpload.jsx)
 const VOICES = {
   hsayama: {
-    name: "ဆရာမကြီး",
+    name: "Hsayama",
     ttsVoice: "Callirrhoe",
-    styleHint: "နှေးညောင်း၊ လေးနက်တဲ့ ပုံပြင်ဆရာမတစ်ယောက်လို ပြောပါ",
+    styleHint: "Speak like a slow-paced, warm, seasoned storyteller.",
   },
   kolay: {
-    name: "ကိုလေး",
+    name: "Kolay",
     ttsVoice: "Puck",
-    styleHint: "သွက်လက်၊ လူငယ်ဆန်တဲ့ commentary style နဲ့ ပြောပါ",
+    styleHint: "Speak in a lively, youthful commentary style.",
   },
   mahmyaing: {
-    name: "မမြိုင်",
+    name: "Mahmyaing",
     ttsVoice: "Aoede",
-    styleHint: "ညင်သာ၊ ခံစားစေတဲ့ ဇာတ်ကြောင်းပြောသူလို ပြောပါ",
+    styleHint: "Speak like a soft, emotive storyteller.",
   },
   bogyi: {
-    name: "ဘိုကြီး",
+    name: "Bogyi",
     ttsVoice: "Orus",
-    styleHint: "နက်ရှိုင်း၊ တင်းမာတဲ့ thriller narrator style နဲ့ ပြောပါ",
+    styleHint: "Speak in a deep, intense thriller-narrator style.",
   },
   yamin: {
-    name: "ရာမင်း",
+    name: "Yamin",
     ttsVoice: "Kore",
-    styleHint: "ခိုင်မာ၊ ယုံကြည်စိတ်ချရတဲ့ female narrator style နဲ့ ပြောပါ",
+    styleHint: "Speak in a firm, confident female-narrator style.",
   },
   koaung: {
-    name: "ကိုအောင်",
+    name: "Ko Aung",
     ttsVoice: "Fenrir",
-    styleHint: "စိတ်လှုပ်ရှားဖွယ်၊ တက်ကြွတဲ့ action commentary style နဲ့ ပြောပါ",
+    styleHint: "Speak in an exciting, high-energy action-commentary style.",
   },
   koko: {
-    name: "ကိုကို",
+    name: "Ko Ko",
     ttsVoice: "Charon",
-    styleHint: "ရှင်းလင်း၊ informative သတင်းဆရာဆန်တဲ့ style နဲ့ ပြောပါ",
+    styleHint: "Speak in a clear, informative news-anchor style.",
   },
   maley: {
-    name: "မလေး",
+    name: "Ma Lay",
     ttsVoice: "Leda",
-    styleHint: "ငယ်ရွယ်၊ သွက်လက်တက်ကြွတဲ့ female voice style နဲ့ ပြောပါ",
+    styleHint: "Speak in a young, lively female-voice style.",
   },
 };
 
 const TONES = {
-  suspense: "တင်းမာဖွယ်ကောင်းတဲ့၊ စိတ်လှုပ်ရှားစေတဲ့",
-  comedy: "ရယ်စရာကောင်းတဲ့၊ ပေါ့ပေါ့ပါးပါး",
-  emotional: "ခံစားချက်ပြင်းထန်တဲ့၊ နှလုံးသားကို ထိမိတဲ့",
-  epic: "ဒရာမာကြီးဆန်တဲ့၊ ကြီးကျယ်တဲ့",
+  suspense: "tense and thrilling",
+  comedy: "funny and lighthearted",
+  emotional: "intensely emotional, heartfelt",
+  epic: "grand and dramatic",
 };
 
 module.exports = { VOICES, TONES };

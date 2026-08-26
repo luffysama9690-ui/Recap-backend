@@ -18,7 +18,7 @@ const router = express.Router();
 // this to show the title/thumbnail/duration before the user confirms.
 router.post("/link/preview", async (req, res) => {
   const { url } = req.body;
-  if (!url) return res.status(400).json({ error: "url ပါဝင်ရမယ်" });
+  if (!url) return res.status(400).json({ error: "url is required" });
 
   try {
     const info = await probeVideo(url);
@@ -36,7 +36,7 @@ router.post("/link/preview", async (req, res) => {
 // error TikTok/RedNote occasionally throw).
 router.post("/link", async (req, res) => {
   const { url, voice, tone, info } = req.body;
-  if (!url) return res.status(400).json({ error: "url ပါဝင်ရမယ်" });
+  if (!url) return res.status(400).json({ error: "url is required" });
 
   const jobId = crypto.randomUUID();
   const job = createJob(jobId);
@@ -53,16 +53,16 @@ router.post("/link", async (req, res) => {
 // type through one consistent path if it wants to.
 router.get("/link/:id", (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) return res.status(404).json({ error: "job မတွေ့ပါ" });
+  if (!job) return res.status(404).json({ error: "job not found" });
   const { id, status, progress, error } = job;
   res.json({ id, status, progress, error, ready: status === "done" });
 });
 
 router.get("/link/:id/result", (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) return res.status(404).json({ error: "job မတွေ့ပါ" });
+  if (!job) return res.status(404).json({ error: "job not found" });
   if (job.status !== "done" || !job.resultPath) {
-    return res.status(409).json({ error: "video မပြီးသေးပါ" });
+    return res.status(409).json({ error: "video is not ready yet" });
   }
   res.download(job.resultPath, "recap.mp4");
 });
